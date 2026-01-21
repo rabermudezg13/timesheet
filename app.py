@@ -7,16 +7,10 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Timesheet Reminder Generator", layout="wide")
 
-# Instructions
+# Header
 st.title("📧 Timesheet Reminder Generator")
-st.markdown("""
-**Setup Instructions:**
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-Upload your Excel report to generate email reminders for substitutes with missing timesheets.
-""")
+st.markdown("**Hello Keona, I'm ready to help you** ☕")
+st.markdown("Upload your Excel report to generate email reminders for substitutes with missing timesheets.")
 
 # Video link constant
 VIDEO_LINK = "https://www.kellyeducation.com/hubfs/kelc/payroll-webtime/index.html#/lessons/3Zo1Sd7m3z2BI8sG-FtRR9Aa0vDukbmD"
