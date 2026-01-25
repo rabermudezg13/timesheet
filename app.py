@@ -74,12 +74,19 @@ Thank you for your prompt attention to this matter."""
     return email_body
 
 def generate_school_email_body(substitute_name, dates_data, school_name=None):
-    """Generate email body for school verification"""
+    """Generate email body for school verification - only includes dates for the specified school"""
     verification_lines = []
+
     for date_str, confirmations, schools in dates_data:
-        school_str = ", ".join(schools) if len(schools) > 1 else schools[0]
-        for conf in confirmations:
-            verification_lines.append(f"Date: {date_str} | School: {school_str} | Substitute: {substitute_name} | Confirmation: {conf} | (YES/NO) ___")
+        # Only include this date if it's for the specified school
+        if school_name and school_name in schools:
+            for conf in confirmations:
+                verification_lines.append(f"Date: {date_str} | School: {school_name} | Substitute: {substitute_name} | Confirmation: {conf} | (YES/NO) ___")
+        elif not school_name:
+            # If no school specified, include all
+            school_str = ", ".join(schools) if len(schools) > 1 else schools[0]
+            for conf in confirmations:
+                verification_lines.append(f"Date: {date_str} | School: {school_str} | Substitute: {substitute_name} | Confirmation: {conf} | (YES/NO) ___")
 
     verification_block = "\n".join(verification_lines)
 
@@ -357,6 +364,10 @@ if uploaded_file:
             school_approver_emails = selected_data.get('school_approver_emails', {})
 
             if school_approver_emails:
+                # Show warning if multiple schools
+                if len(school_approver_emails) > 1:
+                    st.warning(f"⚠️ **Multiple schools detected ({len(school_approver_emails)} schools)!** You need to send separate emails to each school.")
+
                 st.markdown("Send to school to verify if substitute actually worked")
 
                 # If there's only one school, show directly
