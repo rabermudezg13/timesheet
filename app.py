@@ -73,12 +73,13 @@ Thank you for your prompt attention to this matter."""
 
     return email_body
 
-def generate_school_email_body(substitute_name, dates_data):
+def generate_school_email_body(substitute_name, dates_data, school_name=None):
     """Generate email body for school verification"""
     verification_lines = []
     for date_str, confirmations, schools in dates_data:
+        school_str = ", ".join(schools) if len(schools) > 1 else schools[0]
         for conf in confirmations:
-            verification_lines.append(f"Date: {date_str} | Substitute: {substitute_name} | Confirmation: {conf} | (YES/NO) ___")
+            verification_lines.append(f"Date: {date_str} | School: {school_str} | Substitute: {substitute_name} | Confirmation: {conf} | (YES/NO) ___")
 
     verification_block = "\n".join(verification_lines)
 
@@ -369,7 +370,8 @@ if uploaded_file:
                     # Generate school email
                     school_email_body = generate_school_email_body(
                         selected_data['substitute'],
-                        selected_data['dates_data']
+                        selected_data['dates_data'],
+                        school_name
                     )
                     school_subject = "Substitute Work Verification Request"
 
@@ -405,7 +407,8 @@ if uploaded_file:
                         # Generate school email
                         school_email_body = generate_school_email_body(
                             selected_data['substitute'],
-                            selected_data['dates_data']
+                            selected_data['dates_data'],
+                            selected_school_name
                         )
                         school_subject = "Substitute Work Verification Request"
 
