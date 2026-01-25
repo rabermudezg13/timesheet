@@ -73,6 +73,27 @@ Thank you for your prompt attention to this matter."""
 
     return email_body
 
+def generate_school_email_body(substitute_name, dates_data):
+    """Generate email body for school verification"""
+    verification_lines = []
+    for date_str, confirmations, schools in dates_data:
+        for conf in confirmations:
+            verification_lines.append(f"Date: {date_str} | Substitute: {substitute_name} | Confirmation: {conf} | (YES/NO) ___")
+
+    verification_block = "\n".join(verification_lines)
+
+    email_body = f"""Hello,
+
+I am reaching out from Kelly Education to confirm if the following substitute/s worked at your location on the specific date/s. Please reply to this email at your earliest convenience. Your help with this matter is greatly appreciated.
+
+(YES/NO) in the empty box
+
+{verification_block}
+
+Thank you for your cooperation."""
+
+    return email_body
+
 def create_mailto_button(email_to, subject, body, button_key):
     """Create a button that copies to clipboard and opens mailto link"""
     # URL encode subject and body
@@ -313,11 +334,52 @@ if uploaded_file:
 
             # Show email in text area for manual copy fallback
             st.text_area(
-                "Email Template (Manual Copy Fallback)",
+                "Email Template for Substitute (Manual Copy Fallback)",
                 email_body,
                 height=400,
                 key="email_preview"
             )
+
+            st.markdown("---")
+
+            # School verification email section
+            st.markdown("### 🏫 School Verification Email")
+            st.markdown("Send to school to verify if substitute actually worked")
+
+            # Input for school email
+            school_email = st.text_input(
+                "School Email Address",
+                placeholder="school@district.edu",
+                key="school_email_input"
+            )
+
+            if school_email:
+                # Validate school email
+                school_email_valid = '@' in school_email and '.' in school_email.split('@')[1]
+
+                if not school_email_valid:
+                    st.error("❌ Invalid school email address.")
+                else:
+                    # Generate school email
+                    school_email_body = generate_school_email_body(
+                        selected_data['substitute'],
+                        selected_data['dates_data']
+                    )
+                    school_subject = "Substitute Work Verification Request"
+
+                    # Create button for school email
+                    school_button_key = school_email.replace('@', '_').replace('.', '_') + '_school'
+                    create_mailto_button(school_email, school_subject, school_email_body, school_button_key)
+
+                    st.markdown("---")
+
+                    # Show school email in text area
+                    st.text_area(
+                        "School Email Template (Manual Copy Fallback)",
+                        school_email_body,
+                        height=300,
+                        key="school_email_preview"
+                    )
 
     except Exception as e:
         st.error(f"❌ Error processing file: {str(e)}")
