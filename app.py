@@ -161,7 +161,7 @@ if uploaded_file:
         st.success(f"✅ Loaded {len(df)} rows")
 
         # Required columns
-        required_cols = ['Identifier', 'Substitute', 'Email', 'Confirmation #', 'School', 'Date', 'Days Old']
+        required_cols = ['Identifier', 'Substitute', 'Email', 'Confirmation #', 'School', 'Date', 'Days Old', 'Primary Approver Email']
         missing_cols = [col for col in required_cols if col not in df.columns]
 
         if missing_cols:
@@ -201,18 +201,24 @@ if uploaded_file:
             substitute = group['Substitute'].dropna().iloc[0] if not group['Substitute'].dropna().empty else "Unknown"
             identifier = group['Identifier'].dropna().iloc[0] if not group['Identifier'].dropna().empty else "Unknown"
 
-            # Collect dates with confirmations and schools
+            # Collect dates with confirmations, schools, and approver emails
             dates_dict = {}
+            school_approver_emails = {}
             for _, row in group.iterrows():
                 date_obj = row['Date_normalized']
                 date_str = date_obj.strftime('%Y-%m-%d')
                 conf = row['Confirmation #']
                 school = row['School'] if pd.notna(row['School']) else 'Unknown School'
+                approver_email = row['Primary Approver Email'] if pd.notna(row['Primary Approver Email']) else None
 
                 if date_str not in dates_dict:
                     dates_dict[date_str] = {'confirmations': set(), 'schools': set()}
                 dates_dict[date_str]['confirmations'].add(conf)
                 dates_dict[date_str]['schools'].add(school)
+
+                # Track school to approver email mapping
+                if approver_email and school not in school_approver_emails:
+                    school_approver_emails[school] = approver_email
 
             # Sort dates and prepare data
             sorted_dates = sorted(dates_dict.items(), key=lambda x: x[0])
@@ -230,7 +236,8 @@ if uploaded_file:
                 'total_dates': total_dates,
                 'max_days_old': max_days_old,
                 'unique_schools': unique_schools,
-                'dates_data': dates_data
+                'dates_data': dates_data,
+                'school_approver_emails': school_approver_emails
             }
 
         # Create summary table
@@ -344,22 +351,21 @@ if uploaded_file:
 
             # School verification email section
             st.markdown("### 🏫 School Verification Email")
-            st.markdown("Send to school to verify if substitute actually worked")
 
-            # Input for school email
-            school_email = st.text_input(
-                "School Email Address",
-                placeholder="school@district.edu",
-                key="school_email_input"
-            )
+            # Get unique school approver emails
+            school_approver_emails = selected_data.get('school_approver_emails', {})
 
-            if school_email:
-                # Validate school email
-                school_email_valid = '@' in school_email and '.' in school_email.split('@')[1]
+            if school_approver_emails:
+                st.markdown("Send to school to verify if substitute actually worked")
 
-                if not school_email_valid:
-                    st.error("❌ Invalid school email address.")
-                else:
+                # If there's only one school, show directly
+                if len(school_approver_emails) == 1:
+                    school_name = list(school_approver_emails.keys())[0]
+                    school_email = list(school_approver_emails.values())[0]
+
+                    st.write(f"**School:** {school_name}")
+                    st.write(f"**Email:** {school_email}")
+
                     # Generate school email
                     school_email_body = generate_school_email_body(
                         selected_data['substitute'],
@@ -380,6 +386,44 @@ if uploaded_file:
                         height=300,
                         key="school_email_preview"
                     )
+                else:
+                    # Multiple schools - let user select
+                    st.markdown("Multiple schools found. Select which school to contact:")
+
+                    school_options = [f"{school} ({email})" for school, email in school_approver_emails.items()]
+                    selected_school_option = st.selectbox(
+                        "Select school",
+                        school_options,
+                        key="school_selector"
+                    )
+
+                    if selected_school_option:
+                        # Extract school name and email
+                        selected_school_name = selected_school_option.split(' (')[0]
+                        school_email = school_approver_emails[selected_school_name]
+
+                        # Generate school email
+                        school_email_body = generate_school_email_body(
+                            selected_data['substitute'],
+                            selected_data['dates_data']
+                        )
+                        school_subject = "Substitute Work Verification Request"
+
+                        # Create button for school email
+                        school_button_key = school_email.replace('@', '_').replace('.', '_') + '_school'
+                        create_mailto_button(school_email, school_subject, school_email_body, school_button_key)
+
+                        st.markdown("---")
+
+                        # Show school email in text area
+                        st.text_area(
+                            "School Email Template (Manual Copy Fallback)",
+                            school_email_body,
+                            height=300,
+                            key="school_email_preview"
+                        )
+            else:
+                st.warning("⚠️ No Primary Approver Email found for this substitute's schools.")
 
     except Exception as e:
         st.error(f"❌ Error processing file: {str(e)}")
