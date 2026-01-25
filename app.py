@@ -43,12 +43,14 @@ def normalize_date(date_val):
 def generate_email_body(dates_data):
     """Generate email body with dates block"""
     days_lines = []
-    for date_str, confirmations in dates_data:
+    for date_str, confirmations, schools in dates_data:
+        school_str = ", ".join(schools) if len(schools) > 1 else schools[0]
+
         if len(confirmations) == 1:
-            days_lines.append(f"- {date_str} (Confirmation: {confirmations[0]})")
+            days_lines.append(f"- {date_str} at {school_str} (Confirmation: {confirmations[0]})")
         else:
             conf_str = ", ".join(confirmations)
-            days_lines.append(f"- {date_str} (Confirmation: {conf_str})")
+            days_lines.append(f"- {date_str} at {school_str} (Confirmation: {conf_str})")
 
     days_block = "\n".join(days_lines)
 
@@ -178,20 +180,23 @@ if uploaded_file:
             substitute = group['Substitute'].dropna().iloc[0] if not group['Substitute'].dropna().empty else "Unknown"
             identifier = group['Identifier'].dropna().iloc[0] if not group['Identifier'].dropna().empty else "Unknown"
 
-            # Collect dates with confirmations
+            # Collect dates with confirmations and schools
             dates_dict = {}
             for _, row in group.iterrows():
                 date_obj = row['Date_normalized']
                 date_str = date_obj.strftime('%Y-%m-%d')
                 conf = row['Confirmation #']
+                school = row['School'] if pd.notna(row['School']) else 'Unknown School'
 
                 if date_str not in dates_dict:
-                    dates_dict[date_str] = set()
-                dates_dict[date_str].add(conf)
+                    dates_dict[date_str] = {'confirmations': set(), 'schools': set()}
+                dates_dict[date_str]['confirmations'].add(conf)
+                dates_dict[date_str]['schools'].add(school)
 
             # Sort dates and prepare data
             sorted_dates = sorted(dates_dict.items(), key=lambda x: x[0])
-            dates_data = [(date, sorted(list(confs))) for date, confs in sorted_dates]
+            dates_data = [(date, sorted(list(data['confirmations'])), sorted(list(data['schools'])))
+                         for date, data in sorted_dates]
 
             # Calculate summary metrics
             total_dates = len(dates_data)
@@ -269,12 +274,14 @@ if uploaded_file:
 
             with col1:
                 st.markdown("### 📅 Pending Dates")
-                for date_str, confirmations in selected_data['dates_data']:
+                for date_str, confirmations, schools in selected_data['dates_data']:
+                    school_str = ", ".join(schools) if len(schools) > 1 else schools[0]
+
                     if len(confirmations) == 1:
-                        st.write(f"- {date_str} (Confirmation: {confirmations[0]})")
+                        st.write(f"- {date_str} at {school_str} (Confirmation: {confirmations[0]})")
                     else:
                         conf_str = ", ".join(confirmations)
-                        st.write(f"- {date_str} (Confirmation: {conf_str})")
+                        st.write(f"- {date_str} at {school_str} (Confirmation: {conf_str})")
 
             with col2:
                 st.markdown("### 📧 Email Details")
