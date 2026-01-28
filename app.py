@@ -214,7 +214,7 @@ if uploaded_file:
             school_approver_emails = {}
             for _, row in group.iterrows():
                 date_obj = row['Date_normalized']
-                date_str = date_obj.strftime('%Y-%m-%d')
+                date_str = date_obj.strftime('%m/%d/%Y')
                 conf = row['Confirmation #']
                 school = row['School'] if pd.notna(row['School']) else 'Unknown School'
                 approver_email = row['Primary Approver Email'] if pd.notna(row['Primary Approver Email']) else None
