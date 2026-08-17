@@ -1,0 +1,11 @@
+.git
+.gitignore
+.gcloudignore
+__pycache__/
+*.py[cod]
+*.log
+*.xlsx
+*.xls
+.streamlit/secrets.toml
+deploy.sh
+CLOUDFLARE_SETUP.md
