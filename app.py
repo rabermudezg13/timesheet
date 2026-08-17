@@ -9,7 +9,7 @@ st.set_page_config(page_title="Timesheet Reminder Generator", layout="wide")
 
 # Header
 st.title("📧 Timesheet Reminder Generator")
-st.markdown("**Hello, amazing Talent Advisor team: Luisa, Tiana, and LaShuinda!** ☕")
+st.markdown("**Hello, amazing Talent Advisor team: Luisa, Tiana, and Lashunda!** ☕")
 st.markdown("Upload your Excel report to generate email reminders for substitutes with missing timesheets.")
 
 # Video link constant
