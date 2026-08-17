@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ID="timesheet-f82fa"
+PROJECT_ID="timesheet-d595a"
 SERVICE_NAME="timesheet"
 REGION="us-east1"
 
