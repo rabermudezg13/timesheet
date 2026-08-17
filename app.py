@@ -1,4 +1,6 @@
 import streamlit as st
+import hmac
+import os
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -6,6 +8,40 @@ from urllib.parse import quote
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Timesheet Reminder Generator", layout="wide")
+
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "").strip().lower()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+
+def require_authentication():
+    """Require the configured administrator credentials before showing the app."""
+    if st.session_state.get("authenticated"):
+        with st.sidebar:
+            st.success(f"Signed in as {ADMIN_EMAIL}")
+            if st.button("Sign out", use_container_width=True):
+                st.session_state.authenticated = False
+                st.rerun()
+        return
+
+    st.title("🔐 Timesheet Admin")
+    st.write("Sign in to access the Timesheet Reminder Generator.")
+
+    with st.form("login_form"):
+        email = st.text_input("Email").strip().lower()
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Sign in", use_container_width=True)
+
+    if submitted:
+        email_ok = bool(ADMIN_EMAIL) and hmac.compare_digest(email, ADMIN_EMAIL)
+        password_ok = bool(ADMIN_PASSWORD) and hmac.compare_digest(password, ADMIN_PASSWORD)
+        if email_ok and password_ok:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Invalid email or password.")
+
+    st.stop()
+
+require_authentication()
 
 # Header
 st.title("📧 Timesheet Reminder Generator")
