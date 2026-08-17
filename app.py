@@ -169,7 +169,7 @@ if uploaded_file:
         st.success(f"✅ Loaded {len(df)} rows")
 
         # Required columns
-        required_cols = ['Identifier', 'Substitute', 'Email', 'Confirmation #', 'School', 'Date', 'Days Old', 'Primary Approver Email']
+        required_cols = ['Identifier', 'Substitute', 'Email', 'Confirmation Nbr', 'School', 'Date', 'Days Old', 'Primary Approver Email']
         missing_cols = [col for col in required_cols if col not in df.columns]
 
         if missing_cols:
@@ -192,14 +192,14 @@ if uploaded_file:
         df_clean['Date_normalized'] = df_clean['Date'].apply(normalize_date)
         df_clean = df_clean.dropna(subset=['Date_normalized'])
 
-        # Treat Confirmation # as string
-        df_clean['Confirmation #'] = df_clean['Confirmation #'].astype(str).str.strip()
+        # Treat Confirmation Nbr as string
+        df_clean['Confirmation Nbr'] = df_clean['Confirmation Nbr'].astype(str).str.strip()
 
         # Clean Email
         df_clean['Email'] = df_clean['Email'].astype(str).str.strip().str.lower()
 
-        # De-duplicate exact duplicates (Email, Date, Confirmation #)
-        df_clean = df_clean.drop_duplicates(subset=['Email', 'Date_normalized', 'Confirmation #'])
+        # De-duplicate exact duplicates (Email, Date, Confirmation Nbr)
+        df_clean = df_clean.drop_duplicates(subset=['Email', 'Date_normalized', 'Confirmation Nbr'])
 
         # Group by Email
         grouped_data = {}
@@ -215,7 +215,7 @@ if uploaded_file:
             for _, row in group.iterrows():
                 date_obj = row['Date_normalized']
                 date_str = date_obj.strftime('%m/%d/%Y')
-                conf = row['Confirmation #']
+                conf = row['Confirmation Nbr']
                 school = row['School'] if pd.notna(row['School']) else 'Unknown School'
                 approver_email = row['Primary Approver Email'] if pd.notna(row['Primary Approver Email']) else None
 
