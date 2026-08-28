@@ -4,8 +4,12 @@ import numpy as np
 from datetime import datetime
 from urllib.parse import quote
 import streamlit.components.v1 as components
+from auth import render_admin_panel, require_login
 
 st.set_page_config(page_title="Timesheet Reminder Generator", layout="wide")
+
+current_user = require_login()
+render_admin_panel(current_user)
 
 # Header
 st.title("📧 Timesheet Reminder Generator")
