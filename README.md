@@ -100,6 +100,9 @@ The app is configured via `.streamlit/config.toml`:
 
 ## 📋 Features
 
+- Secure email/password login with Firebase Authentication
+- Administrator panel to create, disable, enable, and reset user passwords
+- User and administrator roles
 - Upload Excel reports (.xlsx)
 - Automatic data cleaning and grouping
 - Email template generation
@@ -107,6 +110,39 @@ The app is configured via `.streamlit/config.toml`:
 - Clipboard auto-copy
 - Search and filter substitutes
 - Warning for overdue timesheets (>21 days)
+
+## 🔐 User authentication setup
+
+The app uses Firebase Authentication so accounts remain available when Streamlit restarts.
+
+1. In Firebase Console, enable **Authentication → Sign-in method → Email/Password**.
+2. Create a Firebase service account and download its JSON key.
+3. In the Streamlit app, open **Settings → Secrets** and add:
+
+```toml
+[firebase]
+web_api_key = "YOUR_FIREBASE_WEB_API_KEY"
+admin_email = "YOUR_ADMIN_EMAIL"
+service_account_json = """
+{
+  "type": "service_account",
+  "project_id": "YOUR_PROJECT_ID",
+  "private_key_id": "...",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n",
+  "client_email": "...",
+  "client_id": "...",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "..."
+}
+"""
+```
+
+4. Create the first account in **Firebase Authentication → Users**, using the same email entered as `admin_email`.
+5. Sign in to the app with that account. It becomes the administrator automatically, and all other accounts can then be managed inside the app.
+
+Never commit the service-account JSON or passwords to GitHub.
 
 ## 🗂️ Expected Excel Columns
 
